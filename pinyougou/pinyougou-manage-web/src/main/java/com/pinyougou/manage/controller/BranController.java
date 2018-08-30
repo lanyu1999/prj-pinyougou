@@ -70,4 +70,18 @@ public class BranController {
         return Result.fail("添加失败");
     }
 
+
+    //批量删除
+
+    @GetMapping("delete")
+    public Result delete(Long [] ids){
+        try {
+            brandService.deleteByIds(ids);
+            return Result.Ok("删除成功");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return Result.fail("删除失败");
+    }
+
 }
