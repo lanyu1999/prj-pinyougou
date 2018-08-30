@@ -1,8 +1,9 @@
 package com.pinyougou.vo;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class PageResult {
+public class PageResult implements Serializable {
     private long total;// 总记录数
     private List<?> rows;// 记录列表
 

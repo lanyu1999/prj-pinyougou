@@ -5,10 +5,8 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.pinyougou.pojo.TbBrand;
 import com.pinyougou.sellergoods.service.BrandService;
 import com.pinyougou.vo.PageResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import com.pinyougou.vo.Result;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -42,4 +40,21 @@ public class BranController {
                                @RequestParam(value = "rows", defaultValue = "5") Integer rows) {
         return brandService.findByPage(page, rows);
     }
+
+    @PostMapping("/add")
+    public Result add(@RequestBody TbBrand tbBrand) {
+        try {
+            brandService.add(tbBrand);
+            return Result.Ok("新增成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Result.fail("新增失败");
+    }
+
+    @GetMapping("/findOne")
+    public TbBrand findOne(Long id){
+        return brandService.findOne(id);
+    }
+
 }
