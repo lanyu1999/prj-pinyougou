@@ -64,7 +64,13 @@
             };
             //保存品牌数据
             $scope.save = function () {
-                $http.post("../brand/add.do",$scope.entity).success(function (response) {
+
+                var method = "add"
+
+                if($scope.entity.id != null){
+                    method = "update";
+                }
+                $http.post("../brand/"+method+".do",$scope.entity).success(function (response) {
                     if(response.success){
                         $scope.reloadList();
                     }else {
@@ -79,6 +85,8 @@
                     $scope.entity = response;
                 })
             }
+            
+
 
 
 

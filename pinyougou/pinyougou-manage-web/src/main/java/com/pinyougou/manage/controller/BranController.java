@@ -56,5 +56,18 @@ public class BranController {
     public TbBrand findOne(Long id){
         return brandService.findOne(id);
     }
+    /**
+     * 修改数据
+     */
+    @PostMapping("/update")
+    public Result update(@RequestBody TbBrand tbBrand){
+        try {
+            brandService.update(tbBrand);
+            return Result.Ok("添加成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Result.fail("添加失败");
+    }
 
 }
