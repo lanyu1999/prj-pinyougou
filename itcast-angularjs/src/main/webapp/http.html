@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>http网络服务</title>
+    <script src="js/angular.min.js"></script>
+    <script type="text/javascript">
+        // 创建 angular
+        // 参数 1 ：模块的名称
+        // 参数 2 ：要加载的其它模块列表，如果没有也得加这个空数组，不加表示获取一个模块         var app = angular.module("app", []);
+        var app = angular.module("app", []);
+
+        // 注册处理器，名称为 myController ，注入 $scope
+        app.controller("myController", function ($scope, $http) {
+            $scope.findPersons = function () {
+                $http.get("data.json").success(function (response) {
+                    $scope.persons = response;
+                }).error(function () {
+                    alert("获取错误");
+                });
+            }
+        });
+    </script>
+</head>
+
+<body ng-app="app" ng-controller="myController" ng-init="findPersons()">
+<table>
+    <thead>
+    <tr>
+        <td>id</td>
+        <td>姓名</td>
+        <td>性别</td>
+    </tr>
+    </thead>
+    <tr ng-repeat="p in persons">
+        <td>{{p.id}}</td>
+        <td>{{p.name}}</td>
+        <td>{{p.gender}}</td>
+    </tr>
+</table>
+
+</body>
+</html>

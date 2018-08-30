@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>点击事件</title>
+    <script src="js/angular.min.js"></script>
+    <script type="text/javascript">
+
+
+
+        var app = angular.module("app",[]);
+        app.controller("myController",function ($scope) {
+            $scope.add=function () {
+                $scope.z = parseInt($scope.x)+parseInt($scope.y);
+            }
+        });
+
+
+    </script>
+</head>
+
+
+
+<body ng-app="app" ng-controller="myController" >
+<!--双向绑定的是表单项；一般在form标签里面，然后可以点击提交按钮后在后台可以接收的那些标签；如：input/button/textarea-->
+x：<input ng-model="x"/><br/>
+y：<input ng-model="y"/><br/>
+
+<button ng-click="add()">计算x+y的值</button>
+
+x+y={{z}}
+
+</body>
+</html>
