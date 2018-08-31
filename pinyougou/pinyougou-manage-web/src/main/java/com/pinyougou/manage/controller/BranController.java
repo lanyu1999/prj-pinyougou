@@ -53,14 +53,15 @@ public class BranController {
     }
 
     @GetMapping("/findOne")
-    public TbBrand findOne(Long id){
+    public TbBrand findOne(Long id) {
         return brandService.findOne(id);
     }
+
     /**
      * 修改数据
      */
     @PostMapping("/update")
-    public Result update(@RequestBody TbBrand tbBrand){
+    public Result update(@RequestBody TbBrand tbBrand) {
         try {
             brandService.update(tbBrand);
             return Result.Ok("添加成功");
@@ -74,14 +75,24 @@ public class BranController {
     //批量删除
 
     @GetMapping("delete")
-    public Result delete(Long [] ids){
+    public Result delete(Long[] ids) {
         try {
             brandService.deleteByIds(ids);
             return Result.Ok("删除成功");
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return Result.fail("删除失败");
     }
+
+    ////    根据分页条件查询
+    @PostMapping("/search")
+    public PageResult search(@RequestBody TbBrand brand, @RequestParam(value = "page", defaultValue = "1") Integer page,
+                             @RequestParam(value = "rows", defaultValue = "10") Integer
+                                     rows) {
+        return brandService.search(brand, page, rows);
+
+    }
+
 
 }

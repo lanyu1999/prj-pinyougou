@@ -47,8 +47,21 @@
             };
 
             $scope.reloadList = function () {
-                $scope.findPage($scope.paginationConf.currentPage, $scope.paginationConf.itemsPerPage);
+                $scope.search($scope.paginationConf.currentPage, $scope.paginationConf.itemsPerPage);
 
+            };
+
+
+            //搜索
+            //定义一个空搜索对象
+            $scope.searchEntity = {};
+
+            $scope.search = function (page, rows) {
+                $http.post("../brand/search.do?page="+page+"&rows="+rows,
+                    $scope.searchEntity).success(function (response) {
+                    $scope.list = response.rows;
+                    $scope.paginationConf.totalItems = response.total;
+                });
             };
 
             $scope.findPage = function (page, rows) {
@@ -60,9 +73,8 @@
                     //设置总记录数
                     $scope.paginationConf.totalItems = response.total;
                 });
-
             };
-            //保存品牌数据
+            // 保存品牌数据
             $scope.save = function () {
 
                 var method = "add"
@@ -124,6 +136,8 @@
 
 </head>
 <body ng-app="pinyougou" ng-controller="brandController" ng-init="" class="hold-transition skin-red sidebar-mini">
+
+
 <!-- .box-body -->
 <div class="box-header with-border">
     <h3 class="box-title">品牌管理</h3>
@@ -133,7 +147,6 @@
 
     <!-- 数据表格 -->
     <div class="table-box">
-
         <!--工具栏-->
         <div class="pull-left">
             <div class="form-group form-inline">
@@ -150,10 +163,13 @@
                 </div>
             </div>
         </div>
+
+
         <div class="box-tools pull-right">
-            <div class="has-feedback">
-                品牌名称：<input> 品牌首字母：<input>
-                <button class="btn btn-default">查询</button>
+            <div class="has-feedback">{{searchEntity}}
+                品牌名称：<input ng-model="searchEntity.name">
+                品牌首字母：<input ng-model="searchEntity.firstChar">
+                <button class="btn btn-default"   ng-click="reloadList()">查询</button>
             </div>
         </div>
         <!--工具栏/-->
