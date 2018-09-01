@@ -32,20 +32,20 @@ public class BranController {
     public List<TbBrand> testPage(@RequestParam(value = "page", defaultValue = "1") Integer page,
                                   @RequestParam(value = "rows", defaultValue = "5") Integer rows) {
         //return brandService.testPage(page, rows);
-        return (List<TbBrand>) brandService.findByPage(page, rows).getRows();
+        return (List<TbBrand>) brandService.findPage(page, rows).getRows();
     }
 
     @GetMapping("/findPage")
     public PageResult findPage(@RequestParam(value = "page", defaultValue = "1") Integer page,
                                @RequestParam(value = "rows", defaultValue = "5") Integer rows) {
-        return brandService.findByPage(page, rows);
+        return brandService.findPage(page, rows);
     }
 
     @PostMapping("/add")
     public Result add(@RequestBody TbBrand tbBrand) {
         try {
             brandService.add(tbBrand);
-            return Result.Ok("新增成功");
+            return Result.ok("新增成功");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -64,7 +64,7 @@ public class BranController {
     public Result update(@RequestBody TbBrand tbBrand) {
         try {
             brandService.update(tbBrand);
-            return Result.Ok("添加成功");
+            return Result.ok("添加成功");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -78,7 +78,7 @@ public class BranController {
     public Result delete(Long[] ids) {
         try {
             brandService.deleteByIds(ids);
-            return Result.Ok("删除成功");
+            return Result.ok("删除成功");
         } catch (Exception e) {
             e.printStackTrace();
         }

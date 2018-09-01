@@ -14,7 +14,7 @@ public class Result implements Serializable {
         this.message = message;
     }
 
-    public static Result Ok(String message){
+    public static Result ok(String message){
         return new Result(true,message);
     }
     public static Result fail(String message){

@@ -32,7 +32,7 @@ public abstract class BaseServiceImpl<T> implements BaseService<T> {
     }
 
     @Override
-    public PageResult findByPage(Integer page, Integer rows) {
+    public PageResult findPage(Integer page, Integer rows) {
         PageHelper.startPage(page, rows);
         List<T> list = mapper.selectAll();
         PageInfo<T> pageInfo = new PageInfo<>(list);

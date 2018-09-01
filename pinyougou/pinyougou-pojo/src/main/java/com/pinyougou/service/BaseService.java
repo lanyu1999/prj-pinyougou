@@ -31,7 +31,7 @@ public interface BaseService<T> {
      * @param rows 页大小
      * @return 分页实体对象
      */
-    public PageResult findByPage(Integer page, Integer rows);
+    public PageResult findPage(Integer page, Integer rows);
 
     /**
      * 根据条件分页查询列表
