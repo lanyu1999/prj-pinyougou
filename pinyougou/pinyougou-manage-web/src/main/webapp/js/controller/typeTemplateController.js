@@ -96,4 +96,6 @@ app.controller("typeTemplateController", function ($scope, $controller, typeTemp
         $scope.entity.customAttributeItems.splice(index, 1);
     };
 
+
+
 });
