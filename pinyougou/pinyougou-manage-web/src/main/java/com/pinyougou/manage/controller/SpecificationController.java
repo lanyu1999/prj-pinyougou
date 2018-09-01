@@ -40,12 +40,12 @@ public class SpecificationController {
     }
 
     @GetMapping("/findOne")
-    public TbSpecification findOne(Long id) {
+    public Specification findOne(Long id) {
         return specificationService.findOne(id);
     }
 
     @PostMapping("/update")
-    public Result update(@RequestBody TbSpecification specification) {
+    public Result update(@RequestBody Specification specification) {
         try {
             specificationService.update(specification);
             return Result.ok("修改成功");

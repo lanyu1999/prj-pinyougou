@@ -26,12 +26,43 @@ public class SpecificationServiceImpl extends BaseServiceImpl<TbSpecification> i
     private SpecificationOptionMapper specificationOptionMapper;
 
     @Override
+    public void update(Specification specification) {
+        //更新规格
+        specificationMapper.updateByPrimaryKeySelective(specification.getSpecification());
+        //删除规格选项
+        TbSpecificationOption param = new TbSpecificationOption();
+        param.setSpecId(specification.getSpecification().getId());
+        specificationOptionMapper.delete(param);
+        //新增规格选项
+        if(specification.getSpecificationOptionList() !=null && specification.getSpecificationOptionList().size()>0){
+            for(TbSpecificationOption tbSpecificationOption :specification.getSpecificationOptionList()){
+                specificationOptionMapper.insertSelective(tbSpecificationOption);
+            }
+        }
+
+
+    }
+
+    @Override
+    public Specification findOne(Long id) {
+        Specification specification = new Specification();
+        //查询并设置规格
+        specification.setSpecification(specificationMapper.selectByPrimaryKey(id));
+        TbSpecificationOption param = new TbSpecificationOption();
+        param.setSpecId(id);
+        List<TbSpecificationOption> tbSpecificationOptionList = specificationOptionMapper.select(param);
+        specification.setSpecificationOptionList(tbSpecificationOptionList);
+        return specification;
+
+    }
+
+    @Override
     public void add(Specification specification) {
         //新增规格
         specificationMapper.insertSelective(specification.getSpecification());
         //新增规格选项
-        if(specification.getSpecificationOptionList() != null && specification.getSpecificationOptionList().size()>0){
-            for(TbSpecificationOption tbSpecificationOption :specification.getSpecificationOptionList()){
+        if (specification.getSpecificationOptionList() != null && specification.getSpecificationOptionList().size() > 0) {
+            for (TbSpecificationOption tbSpecificationOption : specification.getSpecificationOptionList()) {
                 tbSpecificationOption.setSpecId(specification.getSpecification().getId());
                 specificationOptionMapper.insertSelective(tbSpecificationOption);
             }
@@ -44,7 +75,7 @@ public class SpecificationServiceImpl extends BaseServiceImpl<TbSpecification> i
 
         Example example = new Example(TbSpecification.class);
         Example.Criteria criteria = example.createCriteria();
-        if(!StringUtils.isEmpty(specification.getSpecName())){
+        if (!StringUtils.isEmpty(specification.getSpecName())) {
             criteria.andLike("specName", "%" + specification.getSpecName() + "%");
         }
 
