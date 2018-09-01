@@ -12,4 +12,6 @@ public interface SpecificationService extends BaseService<TbSpecification> {
     Specification findOne(Long id);
 
     void update(Specification specification);
+
+    void deleteSpecificationByIds(Long[] ids);
 }

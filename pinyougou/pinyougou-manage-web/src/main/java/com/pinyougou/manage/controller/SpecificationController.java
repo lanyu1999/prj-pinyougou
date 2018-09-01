@@ -58,7 +58,7 @@ public class SpecificationController {
     @GetMapping("/delete")
     public Result delete(Long[] ids) {
         try {
-            specificationService.deleteByIds(ids);
+            specificationService.deleteSpecificationByIds(ids);
             return Result.ok("删除成功");
         } catch (Exception e) {
             e.printStackTrace();
