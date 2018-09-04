@@ -32,7 +32,9 @@ app.controller("goodsController", function ($scope, $controller, $location, good
         object.success(function (response) {
             if(response.success){
                 alert(response.message);
-                location.href = "goods.html";
+                //清空富文本编辑器的内容
+                editor.html("");
+                //location.href = "goods.html";
             } else {
                 alert(response.message);
             }
@@ -132,6 +134,7 @@ app.controller("goodsController", function ($scope, $controller, $location, good
     //读取二级商品分类列表
     $scope.$watch("entity.goods.category1Id", function (newValue, oldValue) {
         if (newValue != undefined) {
+            //根据1级商品分类加载2级商品分类列表
             itemCatService.findByParentId(newValue).success(function (response) {
                 $scope.itemCat2List = response;
             });
@@ -141,6 +144,7 @@ app.controller("goodsController", function ($scope, $controller, $location, good
     //读取三级商品分类列表
     $scope.$watch("entity.goods.category2Id", function (newValue, oldValue) {
         if (newValue != undefined) {
+            //根据2级商品分类加载3级商品分类列表
             itemCatService.findByParentId(newValue).success(function (response) {
                 $scope.itemCat3List = response;
             });
@@ -150,6 +154,7 @@ app.controller("goodsController", function ($scope, $controller, $location, good
     //当选择三级分类后，查询对应的分类模板id
     $scope.$watch("entity.goods.category3Id", function (newValue, oldValue) {
         if (newValue != undefined) {
+            //根据商品分类id获取商品分类
             itemCatService.findOne(newValue).success(function (response) {
                 $scope.entity.goods.typeTemplateId = response.typeId;
             });
@@ -171,7 +176,8 @@ app.controller("goodsController", function ($scope, $controller, $location, good
                 }
             });
 
-            //根据分类模板id查询其对应的规格及其规格的选项
+            //根据分类模板id查询其对应的规格及其规格的选项；返回的结构如：
+            //[{"id":27,"text":"网络","options":[{id,optionName,specId,orders}...]},{"id":32,"text":"机身内存","options":[{id,optionName,specId,orders}...]}]
             typeTemplateService.findSpecList(newValue).success(function (response) {
                 $scope.specList = response;
             });
@@ -188,7 +194,7 @@ app.controller("goodsController", function ($scope, $controller, $location, good
             if($event.target.checked){
                 specObj.attributeValue.push(optionName);
             } else {
-               var optIndex = specObj.attributeValue.indexOf(optionName);
+                var optIndex = specObj.attributeValue.indexOf(optionName);
                 specObj.attributeValue.splice(optIndex, 1);
 
                 //如果该规格没有任何选项了，那么也要删除该规格
