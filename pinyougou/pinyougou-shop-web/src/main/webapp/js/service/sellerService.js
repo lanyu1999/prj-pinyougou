@@ -29,4 +29,7 @@ app.service("sellerService",function ($http) {
         return $http.post("../seller/search.do?page=" + page + "&rows=" + rows, searchEntity);
 
     };
+    this.findByParentId = function (parentId) {
+        return $http.get("../itemCat/findByParentId.do?parentId=" + parentId);
+    };
 });
