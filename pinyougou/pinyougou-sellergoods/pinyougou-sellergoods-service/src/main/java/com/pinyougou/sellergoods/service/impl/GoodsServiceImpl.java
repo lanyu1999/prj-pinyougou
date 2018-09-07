@@ -37,6 +37,25 @@ public class GoodsServiceImpl extends BaseServiceImpl<TbGoods> implements GoodsS
     private BrandMapper brandMapper;
 
     @Override
+    public Goods findGoodsById(Long id) {
+        Goods  goods = new Goods();
+//        查询商品spu
+        TbGoods tbGoods = goodsMapper.selectByPrimaryKey(id);
+        goods.setGoods(tbGoods);
+//        查询商品描述
+        TbGoodsDesc tbGoodsDesc = goodDescMapper.selectByPrimaryKey(id);
+        goods.setGoodsDesc(tbGoodsDesc);
+//        查询行频sku列表
+        Example example = new Example(TbItem.class);
+        example.createCriteria().andEqualTo("goodsId",id);
+        List<TbItem> itemList = itemMapper.selectByExample(example);
+        goods.setItemList(itemList);
+        return goods;
+
+
+    }
+
+    @Override
     public void addGoods(Goods goods) {
         //新增商品基础信息
         goodsMapper.insertSelective(goods.getGoods());
