@@ -51,51 +51,56 @@ public class GoodsServiceImpl extends BaseServiceImpl<TbGoods> implements GoodsS
     }
 
     /**
-     * 保存sku动态数据
-     * @param goods 商品
+     * 保存SKU动态数据
+     * @param goods
      */
+
     private void saveItemList(Goods goods) {
-        //如果是不启用规格：应该根据商品基本信息生成一条sku数据保存到tb_item中；
-        // 因为tb_item才是以后展示在页面中让用户购买的商品；在页面中entity.goods.isEnableSpec的值为0；如果启动则为1
-        if("1".equals(goods.getGoods().getIsEnableSpec())) {
-            if (goods.getItemList() != null && goods.getItemList().size() > 0) {
-                for (TbItem item : goods.getItemList()) {
-
-                    //商品的标题应该为：spu商品名称+所有规格选项值
-                    String title = goods.getGoods().getGoodsName();
-
-                    //将sku对于的规格及选项数据转换为一个map;获取对应规格的选项
-                    Map<String, Object> map = JSON.parseObject(item.getSpec());
-                    Set<Map.Entry<String, Object>> entries = map.entrySet();
-                    for (Map.Entry entry : entries) {
-                        title += " " + entry.getValue();
-                    }
-                    item.setTitle(title);
-
-                    setItemValue(item, goods);
-
-                    //保存tbItem
-                    itemMapper.insertSelective(item);
+        if("1".equals(goods.getGoods().getIsEnableSpec())){
+            for (TbItem item : goods.getItemList()) {
+                String title = goods.getGoods().getGoodsName();
+                // 组合规格选项形成 SKU
+                Map<String, Object> map = JSON.parseObject(item.getSpec());
+                Set<Map.Entry<String, Object>> entries = map.entrySet();
+                for (Map.Entry<String, Object> entry : entries) {
+                    title += " " + entry.getValue().toString();
                 }
+
+                item.setTitle(title);
+
+                // 图片
+                List<Map> imgList = JSONArray.parseArray(goods.getGoodsDesc().getItemImages(), Map.class);
+                if (imgList != null && imgList.size() > 0) {
+                    // 将商品的第一张图作为 sku的图片
+                    item.setImage(imgList.get(0).get("url").toString());
+                }
+                // 商品分类 id
+                item.setCategoryid(goods.getGoods().getCategory3Id());
+                // 商品分类名称
+                TbItemCat itemCat = itemCatMapper.selectByPrimaryKey(goods.getGoods().getCategory3Id());
+                item.setCategory(itemCat.getName());
+
+                // 创建时间
+                item.setCreateTime(new Date());
+                // 更新时间
+                item.setUpdateTime(item.getCreateTime());
+                //SPU 商品 id
+                item.setGoodsId(goods.getGoods().getId());
+                // 商家 id
+                item.setSellerId(goods.getGoods().getSellerId());
+                // 商家名称
+                TbSeller seller = sellerMapper.selectByPrimaryKey(goods.getGoods().getSellerId());
+                item.setSeller(seller.getName());
+                // 品牌名称
+                TbBrand brand = brandMapper.selectByPrimaryKey(goods.getGoods().getBrandId());
+                item.setBrand(brand.getName());
+
+                itemMapper.insertSelective(item);
             }
-        } else {
-            //不启用规格
-            TbItem item = new TbItem();
+        }else {
 
-            item.setPrice(goods.getGoods().getPrice());
-            item.setNum(9999);
-            item.setIsDefault("1");//表示默认
-            item.setStatus("0");//未审核
-
-            item.setTitle(goods.getGoods().getGoodsName());
-
-            setItemValue(item, goods);
-
-
-            itemMapper.insertSelective(item);
         }
     }
-
 
     @Override
     public PageResult search(Integer page, Integer rows, TbGoods goods) {
@@ -103,9 +108,15 @@ public class GoodsServiceImpl extends BaseServiceImpl<TbGoods> implements GoodsS
 
         Example example = new Example(TbGoods.class);
         Example.Criteria criteria = example.createCriteria();
-        /*if(!StringUtils.isEmpty(goods.get***())){
-            criteria.andLike("***", "%" + goods.get***() + "%");
-        }*/
+        if(!StringUtils.isEmpty(goods.getSellerId())){
+            criteria.andLike("sellerId", "%" + goods.getSellerId() + "%");
+        }
+        if(!StringUtils.isEmpty(goods.getAuditStatus())){
+            criteria.andLike("auditStatus", "%" + goods.getAuditStatus() + "%");
+        }
+        if(!StringUtils.isEmpty(goods.getGoodsName())){
+            criteria.andLike("goodsName", "%" + goods.getGoodsName() + "%");
+        }
 
         List<TbGoods> list = goodsMapper.selectByExample(example);
         PageInfo<TbGoods> pageInfo = new PageInfo<>(list);
