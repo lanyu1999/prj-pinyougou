@@ -15,10 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service(interfaceClass = GoodsService.class)
 public class GoodsServiceImpl extends BaseServiceImpl<TbGoods> implements GoodsService {
@@ -35,6 +32,27 @@ public class GoodsServiceImpl extends BaseServiceImpl<TbGoods> implements GoodsS
     private SellerMapper sellerMapper;
     @Autowired
     private BrandMapper brandMapper;
+
+    @Override
+    public void updateStatus(Long[] ids, String status) {
+        TbGoods tbGoods =  new TbGoods();
+        tbGoods.setAuditStatus(status);
+        Example example = new Example(TbGoods.class);
+        example.createCriteria().andIn("id", Arrays.asList(ids));
+        //批量更新商品的审核状态
+        goodsMapper.updateByExampleSelective(tbGoods,example);
+        if("2".equals((status))){
+            //更新的内容
+            TbItem  item = new TbItem();
+            item.setStatus("1");
+            //更新条件
+            Example itemExample = new Example(TbItem.class);
+            itemExample.createCriteria().andIn("goodsId",Arrays.asList(ids));
+            itemMapper.updateByExampleSelective(item,itemExample);
+        }
+
+
+    }
 
     @Override
     public void updateGoods(Goods goods) {
