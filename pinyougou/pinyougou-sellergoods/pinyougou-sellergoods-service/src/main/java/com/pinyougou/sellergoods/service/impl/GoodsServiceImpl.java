@@ -34,6 +34,16 @@ public class GoodsServiceImpl extends BaseServiceImpl<TbGoods> implements GoodsS
     private BrandMapper brandMapper;
 
     @Override
+    public void deleteGoodsByIds(Long[] ids) {
+        TbGoods tbGoods = new TbGoods();
+        tbGoods.setIsDelete("1");
+        Example example = new Example(TbGoods.class);
+        example.createCriteria().andIn("id",Arrays.asList(ids));
+        //批量更新商品的删除状态 为删除
+        goodsMapper.updateByExampleSelective(tbGoods,example);
+    }
+
+    @Override
     public void updateStatus(Long[] ids, String status) {
         TbGoods tbGoods =  new TbGoods();
         tbGoods.setAuditStatus(status);
@@ -160,6 +170,9 @@ public class GoodsServiceImpl extends BaseServiceImpl<TbGoods> implements GoodsS
 
         Example example = new Example(TbGoods.class);
         Example.Criteria criteria = example.createCriteria();
+        //不查询删除商品
+        criteria.andNotEqualTo("isDelete","1");
+
         if(!StringUtils.isEmpty(goods.getSellerId())){
             criteria.andLike("sellerId", "%" + goods.getSellerId() + "%");
         }
