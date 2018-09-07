@@ -37,6 +37,21 @@ public class GoodsServiceImpl extends BaseServiceImpl<TbGoods> implements GoodsS
     private BrandMapper brandMapper;
 
     @Override
+    public void updateGoods(Goods goods) {
+        //更新商品信息
+        goods.getGoods().setAuditStatus("0");//修改后则重新设置为未审核
+        goodsMapper.updateByPrimaryKeySelective(goods.getGoods());
+        //更新商品描述信息
+        goodDescMapper.updateByPrimaryKeySelective(goods.getGoodsDesc());
+        //删除原有SKU列表
+        TbItem tbItem = new TbItem();
+        tbItem.setGoodsId(goods.getGoods().getId());
+        itemMapper.delete(tbItem);
+        //保存商品
+        saveItemList(goods);
+    }
+
+    @Override
     public Goods findGoodsById(Long id) {
         Goods  goods = new Goods();
 //        查询商品spu
