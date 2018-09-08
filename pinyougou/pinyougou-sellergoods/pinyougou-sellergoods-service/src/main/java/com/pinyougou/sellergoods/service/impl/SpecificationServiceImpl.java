@@ -24,67 +24,9 @@ public class SpecificationServiceImpl extends BaseServiceImpl<TbSpecification> i
 
     @Autowired
     private SpecificationMapper specificationMapper;
+
     @Autowired
     private SpecificationOptionMapper specificationOptionMapper;
-
-    @Override
-    public List<Map<String, Object>> selectOptionList() {
-        return specificationMapper.selectOptionList();
-    }
-
-    @Override
-    public void deleteSpecificationByIds(Long[] ids) {
-        deleteByIds(ids);
-        //批量删除规格选项
-        Example example = new Example(TbSpecificationOption.class);
-        example.createCriteria().andIn("specId", Arrays.asList(ids));
-        specificationOptionMapper.deleteByExample(example);
-
-    }
-
-    @Override
-    public void update(Specification specification) {
-        //更新规格
-        specificationMapper.updateByPrimaryKeySelective(specification.getSpecification());
-        //删除规格选项
-        TbSpecificationOption param = new TbSpecificationOption();
-        param.setSpecId(specification.getSpecification().getId());
-        specificationOptionMapper.delete(param);
-        //新增规格选项
-        if(specification.getSpecificationOptionList() !=null && specification.getSpecificationOptionList().size()>0){
-            for(TbSpecificationOption tbSpecificationOption :specification.getSpecificationOptionList()){
-                specificationOptionMapper.insertSelective(tbSpecificationOption);
-            }
-        }
-
-
-    }
-
-    @Override
-    public Specification findOne(Long id) {
-        Specification specification = new Specification();
-        //查询并设置规格
-        specification.setSpecification(specificationMapper.selectByPrimaryKey(id));
-        TbSpecificationOption param = new TbSpecificationOption();
-        param.setSpecId(id);
-        List<TbSpecificationOption> tbSpecificationOptionList = specificationOptionMapper.select(param);
-        specification.setSpecificationOptionList(tbSpecificationOptionList);
-        return specification;
-
-    }
-
-    @Override
-    public void add(Specification specification) {
-        //新增规格
-        specificationMapper.insertSelective(specification.getSpecification());
-        //新增规格选项
-        if (specification.getSpecificationOptionList() != null && specification.getSpecificationOptionList().size() > 0) {
-            for (TbSpecificationOption tbSpecificationOption : specification.getSpecificationOptionList()) {
-                tbSpecificationOption.setSpecId(specification.getSpecification().getId());
-                specificationOptionMapper.insertSelective(tbSpecificationOption);
-            }
-        }
-    }
 
     @Override
     public PageResult search(Integer page, Integer rows, TbSpecification specification) {
@@ -92,7 +34,7 @@ public class SpecificationServiceImpl extends BaseServiceImpl<TbSpecification> i
 
         Example example = new Example(TbSpecification.class);
         Example.Criteria criteria = example.createCriteria();
-        if (!StringUtils.isEmpty(specification.getSpecName())) {
+        if(!StringUtils.isEmpty(specification.getSpecName())){
             criteria.andLike("specName", "%" + specification.getSpecName() + "%");
         }
 
@@ -100,5 +42,76 @@ public class SpecificationServiceImpl extends BaseServiceImpl<TbSpecification> i
         PageInfo<TbSpecification> pageInfo = new PageInfo<>(list);
 
         return new PageResult(pageInfo.getTotal(), pageInfo.getList());
+    }
+
+    @Override
+    public void add(Specification specification) {
+        //1、保存规格；通用mapper在执行完新增方法之后会回填主键到对象中
+        add(specification.getSpecification());
+
+        //2、保存规格选项列表
+        if (specification.getSpecificationOptionList() != null && specification.getSpecificationOptionList().size() > 0) {
+            for (TbSpecificationOption specificationOption : specification.getSpecificationOptionList()) {
+                specificationOption.setSpecId(specification.getSpecification().getId());
+                specificationOptionMapper.insertSelective(specificationOption);
+            }
+        }
+    }
+
+    @Override
+    public Specification findOne(Long id) {
+        Specification specification = new Specification();
+        //1、规格
+        TbSpecification tbSpecification = specificationMapper.selectByPrimaryKey(id);
+        specification.setSpecification(tbSpecification);
+
+        //2、根据规格id查询规格选项
+        TbSpecificationOption param = new TbSpecificationOption();
+        param.setSpecId(id);
+        List<TbSpecificationOption> specificationOptionList = specificationOptionMapper.select(param);
+        specification.setSpecificationOptionList(specificationOptionList);
+
+        return specification;
+    }
+
+    @Override
+    public void update(Specification specification) {
+        //1、更新规格
+        update(specification.getSpecification());
+
+        //2、根据规格id删除对应的所有选项
+        TbSpecificationOption param = new TbSpecificationOption();
+        param.setSpecId(specification.getSpecification().getId());
+        specificationOptionMapper.delete(param);
+
+        //3、保存规格选项列表
+        if (specification.getSpecificationOptionList() != null && specification.getSpecificationOptionList().size() > 0) {
+            for (TbSpecificationOption specificationOption : specification.getSpecificationOptionList()) {
+                specificationOption.setSpecId(specification.getSpecification().getId());
+                specificationOptionMapper.insertSelective(specificationOption);
+            }
+        }
+    }
+
+    @Override
+    public void deleteSpecificationByIds(Long[] ids) {
+        //1、删除规格
+        deleteByIds(ids);
+
+        //2、删除规格对应的选项；1,2,3  DELETE FROM `tb_specification_option` WHERE spec_id in (1,2,3);
+        Example example = new Example(TbSpecificationOption.class);
+
+        //创建条件对象
+        Example.Criteria criteria = example.createCriteria();
+
+        criteria.andIn("specId", Arrays.asList(ids));
+
+        specificationOptionMapper.deleteByExample(example);
+
+    }
+
+    @Override
+    public List<Map<String, Object>> selectOptionList() {
+        return specificationMapper.selectOptionList();
     }
 }
