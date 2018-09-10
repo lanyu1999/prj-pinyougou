@@ -1,5 +1,6 @@
 package com.pinyougou.content.service.impl;
 
+import com.alibaba.druid.util.StringUtils;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -24,9 +25,9 @@ public class ContentCategoryServiceImpl extends BaseServiceImpl<TbContentCategor
 
         Example example = new Example(TbContentCategory.class);
         Example.Criteria criteria = example.createCriteria();
-        /*if(!StringUtils.isEmpty(contentCategory.get***())){
-            criteria.andLike("***", "%" + contentCategory.get***() + "%");
-        }*/
+       if(!StringUtils.isEmpty(contentCategory.getName())){
+            criteria.andLike("name", "%" + contentCategory.getName() + "%");
+        }
 
         List<TbContentCategory> list = contentCategoryMapper.selectByExample(example);
         PageInfo<TbContentCategory> pageInfo = new PageInfo<>(list);
