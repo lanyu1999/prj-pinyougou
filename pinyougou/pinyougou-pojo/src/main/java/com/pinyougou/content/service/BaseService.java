@@ -1,4 +1,4 @@
-package com.pinyougou.service;
+package com.pinyougou.content.service;
 
 import com.pinyougou.vo.PageResult;
 

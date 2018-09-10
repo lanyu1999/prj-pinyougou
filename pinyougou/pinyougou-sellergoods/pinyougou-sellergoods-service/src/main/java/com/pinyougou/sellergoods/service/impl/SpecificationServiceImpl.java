@@ -8,7 +8,7 @@ import com.pinyougou.mapper.SpecificationOptionMapper;
 import com.pinyougou.pojo.TbSpecification;
 import com.pinyougou.pojo.TbSpecificationOption;
 import com.pinyougou.sellergoods.service.SpecificationService;
-import com.pinyougou.service.impl.BaseServiceImpl;
+import com.pinyougou.content.service.impl.BaseServiceImpl;
 import com.pinyougou.vo.PageResult;
 import com.pinyougou.vo.Specification;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -15,6 +15,7 @@
         <module>pinyougou-sellergoods</module>
         <module>pinyougou-manage-web</module>
         <module>pinyougou-shop-web</module>
+        <module>pinyougou-content</module>
     </modules>
 
     <!-- 集中定义依赖版本号 -->

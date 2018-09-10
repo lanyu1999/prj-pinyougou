@@ -8,7 +8,7 @@ import com.github.pagehelper.PageInfo;
 import com.pinyougou.mapper.*;
 import com.pinyougou.pojo.*;
 import com.pinyougou.sellergoods.service.GoodsService;
-import com.pinyougou.service.impl.BaseServiceImpl;
+import com.pinyougou.content.service.impl.BaseServiceImpl;
 import com.pinyougou.vo.Goods;
 import com.pinyougou.vo.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
