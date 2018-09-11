@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping("/content")
 @RestController
 public class ContentController {
-    @Reference
+    @Reference(timeout = 10000)
     private ContentService contentService;
     /**
      * 根据内容分类ID查询启用的内容列表并降序排列
