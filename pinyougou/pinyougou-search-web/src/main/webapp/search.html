@@ -355,9 +355,7 @@
 											<i>{{item.price.toFixed(2)}}</i>
 										</strong>
 								</div>
-								<div class="attr" style="height: auto">
-									<em>{{item.title}}</em>
-								</div>
+								<div class="attr" style="height: auto" ng-bind-html="item.title | trustHtml"></div>
 								<div class="cu">
 									<em><span>促</span>满一件可参加超值换购</em>
 								</div>
