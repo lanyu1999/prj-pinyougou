@@ -32,6 +32,11 @@ public class ItemSearchServiceImpl implements ItemSearchService {
     @Override
     public Map<String, Object> search(Map<String, Object> searchMap) {
         Map<String, Object> resultMap = new HashMap<>();
+        //对搜索关键子进行去空格处理
+        if(!StringUtils.isEmpty(searchMap.get("keywords"))){
+            searchMap.put("keywords",searchMap.get("keywords").toString().replaceAll(" ",""));
+        }
+
 //        SimpleQuery query = new SimpleQuery();
         //创建高亮搜索对象
         SimpleHighlightQuery query = new SimpleHighlightQuery();
