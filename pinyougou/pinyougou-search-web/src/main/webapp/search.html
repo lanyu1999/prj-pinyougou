@@ -153,7 +153,7 @@
 					<li class="tag" ng-if="searchMap.category != ' ' "  ng-click="removeSearchItem('category')">商品分类：{{searchMap.category}}<i class="sui-icon icon-tb-close"></i></li>
 					<li class="tag" ng-if="searchMap.brand != ' ' "  ng-click="removeSearchItem('brand')">品牌：{{searchMap.brand}}<i class="sui-icon icon-tb-close"></i></li>
 					<li class="tag"  ng-repeat="(key,value) in searchMap.spec"  ng-click="removeSearchItem(key)">内存：{{key}}:{{value}}<i class="sui-icon icon-tb-close"></i></li>
-					<li class="tag">价格：500-1000<i class="sui-icon icon-tb-close"></i></li>
+					<li class="tag"ng-if="searchMap.price != ' ' " ng-click="removeSearchItem('price')" >价格：{{searchMap.price}}<i class="sui-icon icon-tb-close"></i></li>
 					搜索结果：0条
 					{{searchMap}}
 				</ul>
@@ -238,7 +238,7 @@
                     <div class="fl ext"></div>
                 </div>
 				
-				<div class="type-wrap">
+				<div class="type-wrap" ng-if="searchMap.price!=''">
 					<div class="fl key">价格</div>
 					<div class="fl value">
 						<ul class="type-list">

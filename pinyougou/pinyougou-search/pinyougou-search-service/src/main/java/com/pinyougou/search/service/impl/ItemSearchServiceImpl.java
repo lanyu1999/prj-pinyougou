@@ -4,6 +4,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.ctc.wstx.util.StringUtil;
 import com.pinyougou.pojo.TbItem;
 import com.pinyougou.search.service.ItemSearchService;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.core.query.*;
@@ -63,6 +64,21 @@ public class ItemSearchServiceImpl implements ItemSearchService {
                 query.addFilterQuery(simpleFilterQuery);
             }
 
+        }
+        if(!StringUtils.isEmpty(searchMap.get("price"))){
+            //获取起始价格
+            String[] prices = searchMap.get("price").toString().split("-");
+            //价格大于等与起始价格
+            Criteria startCriteria = new Criteria("item_price").greaterThanEqual(prices[0]);
+            SimpleFilterQuery startPriceFilterQuery = new SimpleFilterQuery(startCriteria);
+            query.addFilterQuery(startPriceFilterQuery);
+            //价格雄安与等于结束价格
+            if(!"*".equals(prices[1])){
+                //价格小于等于起始价格
+                Criteria endCriteria = new Criteria("item_price").lessThanEqual(prices[1]);
+                SimpleFilterQuery endPriceFilterQuery = new SimpleFilterQuery(endCriteria);
+                query.addFilterQuery(endPriceFilterQuery);
+            }
         }
 
         //查询
