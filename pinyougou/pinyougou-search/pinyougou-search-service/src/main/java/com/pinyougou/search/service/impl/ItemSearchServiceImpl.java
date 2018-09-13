@@ -6,6 +6,7 @@ import com.pinyougou.pojo.TbItem;
 import com.pinyougou.search.service.ItemSearchService;
 import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.core.query.*;
 import org.springframework.data.solr.core.query.result.HighlightEntry;
@@ -62,6 +63,7 @@ public class ItemSearchServiceImpl implements ItemSearchService {
         highlightOptions.setSimplePrefix("<em style='color:red'>");//高亮其实标签
         highlightOptions.setSimplePostfix("</em>");//高亮结束标签
         query.setHighlightOptions(highlightOptions);
+
         //根据商品分类过滤查询:
         if (!StringUtils.isEmpty(searchMap.get("category"))) {
             Criteria categoryCriteria = new Criteria("item_category").is(searchMap.get("category"));
@@ -97,6 +99,13 @@ public class ItemSearchServiceImpl implements ItemSearchService {
                 SimpleFilterQuery endPriceFilterQuery = new SimpleFilterQuery(endCriteria);
                 query.addFilterQuery(endPriceFilterQuery);
             }
+        }
+        //设置排序
+        if(!StringUtils.isEmpty(searchMap.get("sortField"))&&!StringUtils.isEmpty(searchMap.get("sort"))){
+            String sortOrder = searchMap.get("sort").toString();
+            Sort sort = new Sort(sortOrder.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC, "item_" +
+                    searchMap.get("sortField").toString());
+            query.addSort(sort);
         }
 
         //查询

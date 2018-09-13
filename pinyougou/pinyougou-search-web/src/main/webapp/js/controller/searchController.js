@@ -7,7 +7,9 @@ app.controller("searchController", function ($scope, searchService) {
         "spec": {},
         "price": "",
         "pageNo": 1,
-        "pageSize": 20
+        "pageSize": 20,
+        "sortField": "",
+        "sort": ""
     };
     // 根据关键字搜索商品
     $scope.search = function () {
@@ -114,6 +116,14 @@ app.controller("searchController", function ($scope, searchService) {
             $scope.searchMap.pageNo = pageNo;
             $scope.search();
         }
+    };
+
+
+    // 排序搜索
+    $scope.sortSearch = function (sortField, sort) {
+        $scope.searchMap.sortField = sortField;
+        $scope.searchMap.sort = sort;
+        $scope.search();
     };
 
 
