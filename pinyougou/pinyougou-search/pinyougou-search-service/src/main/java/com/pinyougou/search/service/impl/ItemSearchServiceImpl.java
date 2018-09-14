@@ -1,10 +1,9 @@
 package com.pinyougou.search.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.ctc.wstx.util.StringUtil;
+import com.alibaba.fastjson.JSON;
 import com.pinyougou.pojo.TbItem;
 import com.pinyougou.search.service.ItemSearchService;
-import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.solr.core.SolrTemplate;
@@ -19,113 +18,151 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@Service(interfaceClass = ItemSearchService.class)
+@Service
 public class ItemSearchServiceImpl implements ItemSearchService {
+
     @Autowired
     private SolrTemplate solrTemplate;
 
-    /**
-     * 根据搜索关键字搜索商品列表
-     *
-     * @param searchMap 搜索条件
-     * @return 搜索结果
-     */
     @Override
     public Map<String, Object> search(Map<String, Object> searchMap) {
-        Map<String, Object> resultMap = new HashMap<>();
-        //对搜索关键子进行去空格处理
+        Map<String, Object> resultMap = new HashMap<String, Object>();
+
+        //创建查询对象
+        SimpleHighlightQuery query = new SimpleHighlightQuery();
+
+        //处理多关键字
         if(!StringUtils.isEmpty(searchMap.get("keywords"))){
-            searchMap.put("keywords",searchMap.get("keywords").toString().replaceAll(" ",""));
+            searchMap.put("keywords", searchMap.get("keywords").toString().replaceAll(" ", ""));
         }
 
-//        SimpleQuery query = new SimpleQuery();
-        //创建高亮搜索对象
-        SimpleHighlightQuery query = new SimpleHighlightQuery();
-        //查询条件
+        //设置查询条件
         Criteria criteria = new Criteria("item_keywords").is(searchMap.get("keywords"));
         query.addCriteria(criteria);
-        //设置分页信息
-        Integer pageNo = 1;
-        Integer pageSize = 20;
-        if(searchMap.get("pageNo")!=null){
-            pageNo = Integer.parseInt(searchMap.get("pageNo").toString());
-        }
-        if(searchMap.get("pageSize")!=null){
-            pageSize = Integer.parseInt(searchMap.get("pageSize").toString());
-        }
-        query.setOffset((pageNo-1));
-        query.setRows(pageSize);
 
-
-        //设置高亮
+        //设置高亮域
         HighlightOptions highlightOptions = new HighlightOptions();
-        highlightOptions.addField("item_title");//高亮域
-        highlightOptions.setSimplePrefix("<em style='color:red'>");//高亮其实标签
-        highlightOptions.setSimplePostfix("</em>");//高亮结束标签
+        //高亮域名称
+        highlightOptions.addField("item_title");
+
+        //设置高亮的起始标签
+        highlightOptions.setSimplePrefix("<em style='color:red'>");
+        //设置高亮的结束标签
+        highlightOptions.setSimplePostfix("</em>");
+
         query.setHighlightOptions(highlightOptions);
 
-        //根据商品分类过滤查询:
-        if (!StringUtils.isEmpty(searchMap.get("category"))) {
+        //根据商品分类过滤查询：在查询条件的结果下应用过滤条件进行过滤
+        if(!StringUtils.isEmpty(searchMap.get("category"))){
             Criteria categoryCriteria = new Criteria("item_category").is(searchMap.get("category"));
-            SimpleFilterQuery simpleFilterQuery = new SimpleFilterQuery(categoryCriteria);
-            query.addFilterQuery(simpleFilterQuery);
+            SimpleFilterQuery categoryFilterQuery = new SimpleFilterQuery(categoryCriteria);
+            query.addFilterQuery(categoryFilterQuery);
         }
-        if (!StringUtils.isEmpty(searchMap.get("brand"))) {
-            Criteria brandCriteria = new Criteria("item_brand").is(searchMap.get("brand"));
-            SimpleFilterQuery simpleFilterQuery = new SimpleFilterQuery(brandCriteria);
-            query.addFilterQuery(simpleFilterQuery);
-        }
-        if (searchMap.get("spec") != null) {
-            Map<String, Object> map = (Map<String, Object>) searchMap.get("spec");
-            Set<Map.Entry<String, Object>> entrySet = map.entrySet();
-            for (Map.Entry<String, Object> entry : entrySet) {
-                Criteria specCriteria = new Criteria("item_spec_" + entry.getKey()).is(entry.getValue());
-                SimpleFilterQuery simpleFilterQuery = new SimpleFilterQuery(specCriteria);
-                query.addFilterQuery(simpleFilterQuery);
-            }
 
+        //根据品牌过滤查询：
+        if(!StringUtils.isEmpty(searchMap.get("brand"))){
+            Criteria brandCriteria = new Criteria("item_brand").is(searchMap.get("brand"));
+            SimpleFilterQuery brandFilterQuery = new SimpleFilterQuery(brandCriteria);
+            query.addFilterQuery(brandFilterQuery);
         }
-        if (!StringUtils.isEmpty(searchMap.get("price"))) {
-            //获取起始价格
-            String[] prices = searchMap.get("price").toString().split("-");
-            //价格大于等与起始价格
-            Criteria startCriteria = new Criteria("item_price").greaterThanEqual(prices[0]);
-            SimpleFilterQuery startPriceFilterQuery = new SimpleFilterQuery(startCriteria);
-            query.addFilterQuery(startPriceFilterQuery);
-            //价格雄安与等于结束价格
-            if (!"*".equals(prices[1])) {
-                //价格小于等于起始价格
-                Criteria endCriteria = new Criteria("item_price").lessThanEqual(prices[1]);
-                SimpleFilterQuery endPriceFilterQuery = new SimpleFilterQuery(endCriteria);
-                query.addFilterQuery(endPriceFilterQuery);
+
+        //根据规格过滤查询
+        if (searchMap.get("spec") != null) {
+            Map<String, String> specMap = (Map<String, String>)searchMap.get("spec");
+
+            Set<Map.Entry<String, String>> entries = specMap.entrySet();
+            for (Map.Entry<String, String> entry : entries) {
+                //在schema.xml文件中定义的域名称为：item_spec_* --》 item_spec_网络
+                Criteria specCriteria = new Criteria("item_spec_" + entry.getKey()).is(entry.getValue());
+                SimpleFilterQuery specFilterQuery = new SimpleFilterQuery(specCriteria);
+                query.addFilterQuery(specFilterQuery);
             }
         }
+
+        //根据价格过滤查询：
+        if(!StringUtils.isEmpty(searchMap.get("price"))){
+
+            String[] prices = searchMap.get("price").toString().split("-");
+
+            //价格起始区间
+            Criteria startCriteria = new Criteria("item_price").greaterThanEqual(prices[0]);
+            SimpleFilterQuery startFilterQuery = new SimpleFilterQuery(startCriteria);
+            query.addFilterQuery(startFilterQuery);
+
+            //价格结束区间；如果不为*的话
+            if (!"*".equals(prices[1])) {
+                Criteria endCriteria = new Criteria("item_price").lessThanEqual(prices[1]);
+                SimpleFilterQuery endFilterQuery = new SimpleFilterQuery(endCriteria);
+                query.addFilterQuery(endFilterQuery);
+            }
+        }
+
         //设置排序
-        if(!StringUtils.isEmpty(searchMap.get("sortField"))&&!StringUtils.isEmpty(searchMap.get("sort"))){
+        if(!StringUtils.isEmpty(searchMap.get("sortField")) && !StringUtils.isEmpty(searchMap.get("sort"))){
             String sortOrder = searchMap.get("sort").toString();
-            Sort sort = new Sort(sortOrder.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC, "item_" +
-                    searchMap.get("sortField").toString());
+            Sort sort = new Sort("DESC".equals(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC,
+                    "item_" + searchMap.get("sortField"));
             query.addSort(sort);
         }
 
-        //查询
-        HighlightPage<TbItem> itemHighlightPage = solrTemplate.queryForHighlightPage(query, TbItem.class);
+        //设置分页参数
+        int page = 1;
+        if (searchMap.get("pageNo") != null) {
+            page = Integer.parseInt(searchMap.get("pageNo").toString());
+        }
+        int rows = 20;
+        if (searchMap.get("pageSize") != null) {
+            rows = Integer.parseInt(searchMap.get("pageSize").toString());
+        }
+        //起始索引号; (当前页-1)*页大小
+        query.setOffset((page - 1)*rows);
+        //页大小
+        query.setRows(rows);
 
-        // 处理高亮标题
-        List<HighlightEntry<TbItem>> highlighted = itemHighlightPage.getHighlighted();
-        if (highlighted != null && highlighted.size() > 0) {
+        //查询
+        HighlightPage<TbItem> highlightPage = solrTemplate.queryForHighlightPage(query, TbItem.class);
+
+        //获取高亮的标题
+        List<HighlightEntry<TbItem>> highlighted = highlightPage.getHighlighted();
+
+        //对每个商品的标题获取高亮标题并回填
+
+        if(highlighted != null && highlighted.size() > 0) {
             for (HighlightEntry<TbItem> entry : highlighted) {
-                List<HighlightEntry.Highlight> highlights = entry.getHighlights();
-                if (highlights != null && highlights.size() > 0 && highlights.get(0).getSnipplets() != null) {
-                    // 设置高亮标题
-                    entry.getEntity().setTitle(highlights.get(0).getSnipplets().get(0));
+                if (entry.getHighlights() != null && entry.getHighlights().size() > 0) {
+                    entry.getEntity().setTitle(entry.getHighlights().get(0).getSnipplets().get(0));
                 }
             }
         }
-        //设置返回的商品列表
-        resultMap.put("rows", itemHighlightPage.getContent());
-        resultMap.put("totalPages",itemHighlightPage.getTotalPages());
-        resultMap.put("total",itemHighlightPage.getTotalElements());
+
+        //设置返回结果
+        resultMap.put("rows", highlightPage.getContent());
+        //总页数
+        resultMap.put("totalPages", highlightPage.getTotalPages());
+        //总记录数
+        resultMap.put("total", highlightPage.getTotalElements());
+
         return resultMap;
+    }
+
+    @Override
+    public void importItemList(List<TbItem> itemList) {
+        for (TbItem item : itemList) {
+            Map map = JSON.parseObject(item.getSpec(), Map.class);
+            item.setSpecMap(map);
+        }
+
+        solrTemplate.saveBeans(itemList);
+        solrTemplate.commit();
+    }
+
+    @Override
+    public void deleteItemByGoodsIds(List<Long> goodsIds) {
+        Criteria criteria = new Criteria("item_goodsid").in(goodsIds);
+
+        SimpleQuery query = new SimpleQuery(criteria);
+
+        solrTemplate.delete(query);
+        solrTemplate.commit();
     }
 }
