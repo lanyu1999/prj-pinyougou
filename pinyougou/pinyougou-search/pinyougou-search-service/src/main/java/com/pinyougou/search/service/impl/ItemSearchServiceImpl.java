@@ -145,7 +145,7 @@ public class ItemSearchServiceImpl implements ItemSearchService {
         return resultMap;
     }
 
-    @Override
+//    @Override
     public void importItemList(List<TbItem> itemList) {
         for (TbItem item : itemList) {
             Map map = JSON.parseObject(item.getSpec(), Map.class);
@@ -156,7 +156,7 @@ public class ItemSearchServiceImpl implements ItemSearchService {
         solrTemplate.commit();
     }
 
-    @Override
+//    @Override
     public void deleteItemByGoodsIds(List<Long> goodsIds) {
         Criteria criteria = new Criteria("item_goodsid").in(goodsIds);
 
